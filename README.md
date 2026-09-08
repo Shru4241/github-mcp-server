@@ -4,6 +4,55 @@ A Python-based Model Context Protocol (MCP) server that allows AI assistants and
 
 The server uses the GitHub REST API and provides tools for repository management, issue management, file operations, branches, and pull requests.
 
+## 🏗️ Architecture
+
+```text
+                         User
+                          |
+                          v
+                 AI Assistant / MCP Client
+                          |
+                          v
+                  GitHub MCP Server
+                     (FastMCP)
+                          |
+                          v
+                   MCP Tool Selection
+                          |
+             +------------+------------+
+             |            |            |
+             v            v            v
+       Repository       Issues       Files
+          Tools          Tools        Tools
+             |            |            |
+             +------------+------------+
+                          |
+             +------------+------------+
+             |                         |
+             v                         v
+        Branches                 Pull Requests
+          Tools                      Tools
+             |                         |
+             +------------+------------+
+                          |
+                          v
+                  GitHub REST API
+                          |
+                          v
+                  GitHub Repositories
+                          |
+                          v
+                  API Response / Data
+                          |
+                          v
+                 GitHub MCP Server
+                          |
+                          v
+                   Final Response
+                          |
+                          v
+                         User
+
 ## Features
 
 - Get GitHub repository information
