@@ -53,6 +53,9 @@ The server uses the GitHub REST API and provides tools for repository management
                           v
                          User
 
+                         
+```
+
 ## Features
 
 - Get GitHub repository information
@@ -85,10 +88,7 @@ The server uses the GitHub REST API and provides tools for repository management
 
 ### 1. Clone the repository
 
-```bash
-git clone <your-repository-url>
-cd github-mcp-server
-```
+git clone https://github.com/Shru4241/github-mcp-server.git
 
 ### 2. Create a Virtual Environment
 
