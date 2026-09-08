@@ -7,6 +7,9 @@ load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
+if not GITHUB_TOKEN:
+    raise ValueError("GITHUB_TOKEN is not set. Please check your .env file.")
+
 HEADERS = {
     "Authorization": f"Bearer {GITHUB_TOKEN}",
     "Accept": "application/vnd.github+json"
@@ -239,14 +242,15 @@ def close_issue(repo: str, issue_number: int) -> str:
     )
 
 @mcp.tool()
-def get_repo_files(repo: str, path: str = "") -> str:
+def get_repo_files(repo: str, path: str = "", branch: str = "main") -> str:
     """Get files and folders from a GitHub repository."""
     url = f"https://api.github.com/repos/{repo}/contents/{path}"
 
     response = requests.get(
-        url,
-        headers=HEADERS
-    )
+    url,
+    headers=HEADERS,
+    params={"ref": branch}
+)
 
     if response.status_code != 200:
         return f"Failed to get repository files: {response.text}"
@@ -277,14 +281,15 @@ def get_repo_files(repo: str, path: str = "") -> str:
 
 
 @mcp.tool()
-def read_repo_file(repo: str, path: str) -> str:
+def read_repo_file(repo: str, path: str, branch: str = "main") -> str:
     """Read the contents of a file from a GitHub repository."""
     url = f"https://api.github.com/repos/{repo}/contents/{path}"
 
     response = requests.get(
-        url,
-        headers=HEADERS
-    )
+    url,
+    headers=HEADERS,
+    params={"ref": branch}
+)
 
     if response.status_code != 200:
         return f"Failed to read file: {response.text}"
@@ -318,17 +323,18 @@ def create_or_update_file(
 
     url = f"https://api.github.com/repos/{repo}/contents/{path}"
 
-    # Check if the file already exists
+    # Check if the file already exists on the selected branch
     get_response = requests.get(
         url,
-        headers=HEADERS
+        headers=HEADERS,
+        params={"ref": branch}
     )
 
     data = {
-    "message": message,
-    "content": base64.b64encode(content.encode("utf-8")).decode("utf-8"),
-    "branch": branch
-}
+        "message": message,
+        "content": base64.b64encode(content.encode("utf-8")).decode("utf-8"),
+        "branch": branch
+    }
 
     # If the file exists, GitHub requires its current SHA
     if get_response.status_code == 200:
@@ -342,7 +348,14 @@ def create_or_update_file(
     )
 
     if response.status_code not in [200, 201]:
-        return f"Failed to create or update file: {response.text}"
+        return (
+            f"Failed to create or update file.\n"
+            f"Status: {response.status_code}\n"
+            f"Branch: {branch}\n"
+            f"GET Status: {get_response.status_code}\n"
+            f"GET Response: {get_response.text}\n"
+            f"PUT Response: {response.text}"
+        )
 
     result = response.json()
 
@@ -354,6 +367,7 @@ def create_or_update_file(
         f"Commit: {result['commit']['sha']}\n"
         f"URL: {result['content']['html_url']}"
     )
+
 
 @mcp.tool()
 def create_pull_request(
